@@ -1,0 +1,6 @@
+
+:root { --admin-bg:#020617; --admin-accent:#4f8cff; }
+#header { background:var(--admin-bg); color:#e5e7eb; box-shadow:0 2px 10px rgba(0,0,0,0.4); }
+.module { border-radius:12px; box-shadow:0 12px 30px rgba(15,35,95,0.6); }
+.button, input[type=submit], .submit-row input { background:linear-gradient(135deg,var(--admin-accent),#25d5ff); border-radius:999px; border:none; color:#fff; }
+body.login { background: radial-gradient(circle at top,#111827,#020617); }

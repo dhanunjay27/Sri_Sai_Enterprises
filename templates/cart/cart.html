@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>Your Cart</h2>
+
+{% if items %}
+    <table style="width:100%; max-width:900px; margin:auto; border-collapse:collapse; background:white; border-radius:10px; overflow:hidden;">
+        <tr style="background:#f3f4f6; text-align:left;">
+            <th style="padding:12px;">Product</th>
+            <th style="padding:12px;">Qty</th>
+            <th style="padding:12px;">Subtotal</th>
+        </tr>
+
+        {% for it in items %}
+        <tr style="border-bottom:1px solid #eee;">
+            <td style="padding:12px; display:flex; align-items:center; gap:12px;">
+                <img src="{{ it.product.image.url }}" 
+                     style="width:70px; height:70px; object-fit:cover; border-radius:8px;">
+                {{ it.product.name }}
+            </td>
+            <td style="padding:12px;">{{ it.qty }}</td>
+            <td style="padding:12px;">₹{{ it.subtotal }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h3 style="text-align:right; margin-top:20px; margin-right:40px;">
+        Total: ₹{{ total }}
+    </h3>
+
+{% else %}
+    <div style="text-align:center; margin-top:50px;">
+        <h2 style="color:#6b7280;">🛒 Empty Cart</h2>
+        <p>Your cart has no items.</p>
+        <a href="{% url 'store:home' %}" 
+           style="background:#2563eb; color:white; padding:10px 20px; border-radius:8px; display:inline-block; margin-top:10px;">
+           Continue Shopping
+        </a>
+    </div>
+{% endif %}
+
+{% endblock %}

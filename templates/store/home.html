@@ -1,0 +1,84 @@
+{% extends 'base.html' %} 
+{% block content %}
+
+<!-- Centered Search Bar (moved up, closer to navbar) -->
+<div style="display:flex; justify-content:center; margin-top:10px; margin-bottom:10px;">
+  <form method="get" action="{% url 'store:home' %}" 
+        style="display:flex; gap:10px; width:60%; max-width:500px;">
+      
+    <input type="text" name="q" value="{{ query }}"
+           placeholder="Search..."
+           style="flex:1; padding:10px 14px; border-radius:50px; border:1px solid #ccc;">
+    
+    <button type="submit"
+            style="padding:10px 20px; border-radius:50px; background:#2563eb; color:#fff; border:none;">
+      Search
+    </button>
+  </form>
+</div>
+
+<!-- "All" Button Bottom-Right Under Search Bar -->
+<div style="
+  width:100%;
+  max-width:1100px;
+  margin:0 auto;
+  display:flex;
+  justify-content:flex-end;
+  margin-bottom:15px;
+">
+  <a href="{% url 'store:home' %}"
+     style="
+       background:#e5efff;
+       padding:8px 16px;
+       border-radius:20px;
+       color:#2563eb;
+       font-weight:500;
+     ">
+     All
+  </a>
+</div>
+
+<!-- Product Grid -->
+<div class="products-grid">
+  {% for product in products %}
+    <div class="product-card">
+
+      {% with first=product.images.first %}
+        {% if first %}
+          <a href="{% url 'store:product_detail' product.slug %}">
+            <img src="{{ first.image.url }}" 
+                 alt="{{ product.name }}"
+                 style="cursor:pointer;">
+          </a>
+        {% elif product.image %}
+          <a href="{% url 'store:product_detail' product.slug %}">
+            <img src="{{ product.image.url }}" 
+                 alt="{{ product.name }}"
+                 style="cursor:pointer;">
+          </a>
+        {% else %}
+          <div style="height:150px; display:flex; align-items:center; justify-content:center; color:#9ca3af;">
+            No Image
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <div class="product-name">{{ product.name }}</div>
+      <div class="product-price">₹{{ product.price }}</div>
+
+      <div class="btn-row">
+        <a href="{% url 'store:product_detail' product.slug %}" class="btn btn-secondary">
+          View Details
+        </a>
+        <a href="{% url 'cart:add' product.id %}" class="btn btn-primary">
+          Add to Cart
+        </a>
+      </div>
+
+    </div>
+  {% empty %}
+    <p>No products found.</p>
+  {% endfor %}
+</div>
+
+{% endblock %}

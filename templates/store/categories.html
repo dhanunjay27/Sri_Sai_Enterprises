@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2 style="
+    text-align:center;
+    font-size:28px;
+    margin-top:20px;
+    margin-bottom:25px;
+">
+    Categories
+</h2>
+
+<div style="
+    max-width:900px;
+    margin:0 auto;
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));
+    gap:20px;
+    padding:10px 20px;
+">
+
+    {% for c in categories %}
+        {% with count=c.product_set.count %}
+        
+        <a href="{% url 'store:home' %}?category={{ c.slug }}"
+           style="
+               background:white;
+               padding:25px;
+               text-align:center;
+               text-decoration:none;
+               border-radius:12px;
+               box-shadow:0 3px 10px rgba(0,0,0,0.08);
+               color:#111827;
+               transition:0.2s ease;
+               display:block;
+           "
+           onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.12)';"
+           onmouseout="this.style.transform='none'; this.style.boxShadow='0 3px 10px rgba(0,0,0,0.08)';"
+        >
+            <div style="font-size:20px; font-weight:600;">
+                {{ c.name }}
+            </div>
+
+            <div style="font-size:14px; color:#6b7280; margin-top:4px;">
+                {{ count }} product{% if count != 1 %}s{% endif %}
+            </div>
+        </a>
+
+        {% endwith %}
+    {% empty %}
+        <p style="text-align:center; width:100%; color:#6b7280;">
+            No categories found.
+        </p>
+    {% endfor %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,277 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+/* ---------- MAIN LAYOUT ---------- */
+.detail-wrap {
+  max-width: 1100px;
+  margin: 30px auto;
+  display: flex;
+  gap: 40px;
+}
+
+/* Main big image */
+.detail-main-img img {
+  width: 380px;
+  height: 320px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #f3f4f6;
+  cursor: pointer;
+}
+
+/* Thumbnail images */
+.detail-gallery {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+.detail-gallery img {
+  width: 90px;
+  height: 70px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: #f3f4f6;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+}
+.detail-gallery img:hover {
+  transform: scale(1.08);
+}
+
+/* Info section */
+.detail-title {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+.detail-price {
+  font-size: 22px;
+  color: #2563eb;
+  margin-bottom: 14px;
+}
+.detail-description {
+  margin: 12px 0 20px;
+  color: #444;
+  font-size: 15px;
+}
+
+/* Buttons */
+.btn-row {
+  display: flex;
+  gap: 12px;
+}
+.btn {
+  padding: 10px 18px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 14px;
+}
+.btn-primary {
+  background: #2563eb;
+  color: white;
+}
+.btn-secondary {
+  background: #e5e7eb;
+  color: #111;
+}
+
+/* ---------- FULLSCREEN VIEWER ---------- */
+
+#fullscreenModal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.88);
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+#fullscreenImage {
+  max-width: 90%;
+  max-height: 90%;
+  transition: transform 0.25s ease;
+  cursor: grab;
+}
+
+/* Fade animation */
+.fade-image {
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.fade-image.show {
+  opacity: 1;
+}
+
+/* Arrows */
+.fs-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: white;
+  font-size: 40px;
+  cursor: pointer;
+  user-select: none;
+  padding: 10px;
+}
+#fsPrev { left: 20px; }
+#fsNext { right: 20px; }
+
+/* Close button */
+#fsClose {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  font-size: 38px;
+  color: white;
+  cursor: pointer;
+}
+</style>
+
+<!-- ---------- FULLSCREEN VIEWER HTML ---------- -->
+<div id="fullscreenModal">
+  <span id="fsClose" onclick="closeFullscreen()">×</span>
+  <span id="fsPrev" class="fs-arrow" onclick="prevImage()">❮</span>
+  <img id="fullscreenImage" class="fade-image" src="">
+  <span id="fsNext" class="fs-arrow" onclick="nextImage()">❯</span>
+</div>
+
+<!-- ---------- PRODUCT DETAIL PAGE ---------- -->
+<div class="detail-wrap">
+
+  <!-- LEFT AREA (IMAGES) -->
+  <div>
+    <div class="detail-main-img">
+      {% if product.image %}
+        <img src="{{ product.image.url }}" onclick="openFullscreen(0)">
+      {% else %}
+        <img src="{{ images.0.image.url }}" onclick="openFullscreen(0)">
+      {% endif %}
+    </div>
+
+    {% if images %}
+    <div class="detail-gallery">
+      {% for img in images %}
+        <img src="{{ img.image.url }}" onclick="openFullscreen({{ forloop.counter0 }})">
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- RIGHT AREA (INFO) -->
+  <div class="detail-info">
+    <h1 class="detail-title">{{ product.name }}</h1>
+    <div class="detail-price">₹{{ product.price }}</div>
+
+    {% if product.category %}
+      <p style="color:#6b7280;">Category: {{ product.category.name }}</p>
+    {% endif %}
+
+    <p class="detail-description">
+      {{ product.description|default:'No description available.' }}
+    </p>
+
+    <div class="btn-row">
+      <a href="{% url 'cart:add' product.id %}" class="btn btn-primary">Add to Cart</a>
+      <a href="{% url 'store:home' %}" class="btn btn-secondary">Back to Products</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- ---------- FULLSCREEN VIEWER JAVASCRIPT ---------- -->
+<script>
+let images = [
+  {% for img in images %}
+    "{{ img.image.url }}",
+  {% endfor %}
+];
+
+let currentIndex = 0;
+let scale = 1;
+let startX = 0;
+let isDragging = false;
+let lastTapTime = 0;
+
+/* Fade loader */
+function loadImageFade() {
+  const img = document.getElementById("fullscreenImage");
+  img.classList.remove("show");
+
+  setTimeout(() => {
+    img.src = images[currentIndex];
+    scale = 1;
+    img.style.transform = "scale(1)";
+    img.onload = () => img.classList.add("show");
+  }, 120);
+}
+
+function openFullscreen(index) {
+  currentIndex = index;
+  document.getElementById("fullscreenModal").style.display = "flex";
+  loadImageFade();
+}
+
+function closeFullscreen() {
+  document.getElementById("fullscreenModal").style.display = "none";
+}
+
+function nextImage() {
+  currentIndex = (currentIndex + 1) % images.length;
+  loadImageFade();
+}
+
+function prevImage() {
+  currentIndex = (currentIndex - 1 + images.length) % images.length;
+  loadImageFade();
+}
+
+/* Scroll Zoom */
+document.getElementById("fullscreenImage").addEventListener("wheel", e => {
+  e.preventDefault();
+  scale += e.deltaY < 0 ? 0.1 : -0.1;
+  scale = Math.max(1, Math.min(scale, 4));
+  e.target.style.transform = `scale(${scale})`;
+});
+
+/* Double-Tap Zoom (Mobile) + Double-Click Zoom (Desktop) */
+document.getElementById("fullscreenImage").addEventListener("click", e => {
+  let now = new Date().getTime();
+  if (now - lastTapTime < 300) {
+    // DOUBLE TAP
+    scale = scale === 1 ? 2.5 : 1;
+    e.target.style.transform = `scale(${scale})`;
+  }
+  lastTapTime = now;
+});
+
+/* Drag / Swipe Navigation */
+const fsImg = document.getElementById("fullscreenImage");
+
+fsImg.addEventListener("mousedown", e => {
+  isDragging = true;
+  startX = e.clientX;
+});
+
+fsImg.addEventListener("mouseup", e => {
+  if (!isDragging) return;
+  isDragging = false;
+  let diff = e.clientX - startX;
+  if (diff > 70) prevImage();
+  else if (diff < -70) nextImage();
+});
+
+fsImg.addEventListener("touchstart", e => {
+  startX = e.touches[0].clientX;
+});
+
+fsImg.addEventListener("touchend", e => {
+  let diff = e.changedTouches[0].clientX - startX;
+  if (diff > 70) prevImage();
+  else if (diff < -70) nextImage();
+});
+</script>
+
+{% endblock %}
